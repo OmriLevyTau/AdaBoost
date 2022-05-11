@@ -101,17 +101,32 @@ def predict_one_point(hypotheses, alpha_vals, x):
         return 1
     return -1
 
+def _activate_h(hypotheses, alpha_vals, x):
+    res = 0
+    for i in range(len(hypotheses)):
+        h_pred, h_index, h_theta = hypotheses[i]
+        if x[h_index] <= h_theta:
+            p = h_pred
+        else:
+            p = -1 * h_pred
+        res += alpha_vals[i] * p
+    return res
 
-# predict = np.vectorize(predict_one_point, excluded=['hypotheses','alpha_vals'])
-def accuracy(X_test, y_test, hypotheses, alpha_vals):
+
+def accuracy(X, y, hypotheses, alpha_vals):
     errors = 0
-    for i in range(len(X_test)):
-        if predict_one_point(hypotheses, alpha_vals, X_test[i]) != y_test[i]:
+    for i in range(len(X)):
+        if predict_one_point(hypotheses, alpha_vals, X[i]) != y[i]:
             errors += 1
-    return 1 - errors / len(y_test)
+    return 1 - errors / len(y)
 
+def exp_loss(X,y,hypotheses, alpha_vals):
+    m = 1/len(X)
+    res = 0
+    for i in range(len(X)):
+        res += np.exp(-y[i]*_activate_h(hypotheses,alpha_vals,X[i]))
+    return m*res
 
-##############################################
 
 
 ##############################################
@@ -121,15 +136,50 @@ def main():
     if not data:
         return
     (X_train, y_train, X_test, y_test, vocab) = data
-    T = 80
-    hypotheses, alpha_vals = run_adaboost(X_train, y_train, T)
-    print("Accuracy:")
-    print(accuracy(X_test,y_test,hypotheses,alpha_vals))
 
-    ##############################################
+    def q_a(T):
+        hypotheses, alpha_vals = run_adaboost(X_train, y_train, T)
+        t_list = []
+        train_error = []
+        test_error = []
+        for i in range(1, T + 1):
+            t_list.append(i)
+            train_error.append(1 - accuracy(X_train, y_train, hypotheses[:i], alpha_vals[:i]))
+            test_error.append(1 - accuracy(X_test, y_test, hypotheses[:i], alpha_vals[:i]))
+        mem = {"t": [_ for _ in range(1, T+1)], "Train Error": train_error, "Test Error": test_error}
+        plt.plot(t_list,train_error,label="Train Error")
+        plt.plot(t_list, test_error,label="Test Error")
+        plt.xlabel("Iteration")
+        plt.ylabel("Error")
+
+    def q_b(T):
+        hypothesesB, alpha_valsB = run_adaboost(X_train, y_train, T)
+        trans = [vocab[h[1]] for h in hypothesesB]
+        print(trans)
+
+    def q_c(T):
+        hypotheses, alpha_vals = run_adaboost(X_train, y_train, T)
+        t_list = []
+        train_error = []
+        test_error = []
+        for i in range(1, T + 1):
+            t_list.append(i)
+            train_error.append(exp_loss(X_train, y_train, hypotheses[:i], alpha_vals[:i]))
+            test_error.append(exp_loss(X_test, y_test, hypotheses[:i], alpha_vals[:i]))
+        mem = {"t": [_ for _ in range(1, T+1)], "Train Error": train_error, "Test Error": test_error}
+        plt.plot(t_list,train_error,label="Train Error")
+        plt.plot(t_list, test_error,label="Test Error")
+        plt.xlabel("Iteration")
+        plt.ylabel("Exp-Loss")
+        plt.show()
+
+    # Uncomment to run
+    # q_a(80)
+    # q_b(10)
+    # q_c(80)
+
+##############################################
 
 if __name__ == '__main__':
     main()
-
-
 
