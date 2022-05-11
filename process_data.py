@@ -82,7 +82,3 @@ def parse_data():
 
     return X_train, y_train, X_test, y_test, inverse_vocab
 
-
-
-
-
