@@ -32,7 +32,7 @@ def run_adaboost(X_train, y_train, T):
         alpha_vals.append(wt)
         ht = lambda x: np.where(x <= h_theta, h_pred, -1 * h_pred)
         D = (D * np.exp(-1 * wt * y_train * ht(X_train[:, h_index]))) / (
-                D * np.exp(-1 * wt * y_train * ht(X_train[:, h_index])).sum())
+            (D * np.exp(-1 * wt * y_train * ht(X_train[:, h_index]))).sum())
 
     return hypotheses, alpha_vals
 
@@ -60,6 +60,7 @@ def WeakLearner(D, S, y, hypotheses):
     feature_index = -1
     threshold = -1  # the threshold of the min-error weak learner
     h_pred = -1  # 1 if <= theta, -1 else
+
     for feature in range(m):  # for each word
         if feature in h_list:
             continue
@@ -151,6 +152,7 @@ def main():
         plt.plot(t_list, test_error,label="Test Error")
         plt.xlabel("Iteration")
         plt.ylabel("Error")
+        plt.show()
 
     def q_b(T):
         hypothesesB, alpha_valsB = run_adaboost(X_train, y_train, T)
@@ -174,7 +176,7 @@ def main():
         plt.show()
 
     # Uncomment to run
-    # q_a(80)
+    q_a(80)
     # q_b(10)
     # q_c(80)
 
