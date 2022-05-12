@@ -6,6 +6,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 from process_data import parse_data
+import time
 
 np.random.seed(7)
 
@@ -18,7 +19,7 @@ def run_adaboost(X_train, y_train, T):
             Each tuple has 3 elements (h_pred, h_index, h_theta), where h_pred is 
             the returned value (+1 or -1) if the count at index h_index is <= h_theta.
         alpha_vals :
-            A list of T float values, which are the alpha values obtained in every 
+            A list of T float values, which are the alpha values obtained in every
             iteration of the algorithm.
     """
     hypotheses = []
@@ -69,9 +70,9 @@ def WeakLearner(D, S, y, hypotheses):
             feature_data = S[:, feature].copy()
             for theta in feature_thresholds:
                 h1 = np.where(feature_data <= theta, 1, -1)
-                h2 = np.where(feature_data <= theta, -1, 1)
+                h2 = -1*h1
                 e1 = error_calc(D, h1, y)
-                e2 = error_calc(D, h2, y)
+                e2 = 1-e1
                 if e1 < e2:
                     if e1 < min_error:
                         min_error = e1
@@ -157,7 +158,8 @@ def main():
     def q_b(T):
         hypothesesB, alpha_valsB = run_adaboost(X_train, y_train, T)
         trans = [vocab[h[1]] for h in hypothesesB]
-        print(trans)
+        for t in range(len(trans)):
+            print(f"{trans[t]}:  {alpha_valsB[t]}")
 
     def q_c(T):
         hypotheses, alpha_vals = run_adaboost(X_train, y_train, T)
@@ -176,7 +178,11 @@ def main():
         plt.show()
 
     # Uncomment to run
+    start = time.time()
     q_a(80)
+    end = time.time()
+    print(f"Total of: {end-start} seconds")
+    print(f"{(end-start)/80} seconds per iteration" )
     # q_b(10)
     # q_c(80)
 
